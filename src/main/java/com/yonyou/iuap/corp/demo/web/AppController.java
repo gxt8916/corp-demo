@@ -53,4 +53,28 @@ public class AppController {
         LOGGER.error("请求开放平台接口失败，code: {}, message: {}", response.getCode(), response.getMessage());
         throw new RuntimeException("请求开放平台接口失败, code: " + response.getCode() + ", message: " + response.getMessage());
     }
+
+    @GetMapping("/getTenantId")
+    public AccessTokenResponse getAccessToken() throws IOException, InvalidKeyException, NoSuchAlgorithmException {
+        Map<String, String> params = new HashMap<>();
+        // 除签名外的其他参数
+        params.put("appKey", appKey);
+        params.put("timestamp", String.valueOf(System.currentTimeMillis()));
+        // 计算签名
+        String signature = SignHelper.sign(params, appSecret);
+        params.put("signature", signature);
+
+        // 请求
+        String requestUrl = openApiUrl + "/open-auth/selfAppAuth/getTenantId";
+        GenericResponse<AccessTokenResponse> response = RequestTool.doGet(requestUrl, params, new 
+        TypeReference<GenericResponse<AccessTokenResponse>>() {});
+
+        if (response.isSuccess()) {
+            return response.getData();
+        }
+
+        LOGGER.error("请求开放平台接口失败，code: {}, message: {}", response.getCode(), response.getMessage());
+        throw new RuntimeException("请求开放平台接口失败, code: " + response.getCode() + ", message: " + response.getMessage());
+    }
+
 }
